@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="WebSite3" default="release">
+  <!-- Version settings -->
+  <property name="svn.executable" value="lib/subversion/svn.exe" dynamic="true" if="${not property::exists('svn.executable')}" />
+  <property name="revisionnumber" value="9999" dynamic="true"/>
+  <property name="project.fullversion" value="1.0.${revisionnumber}.0" dynamic="true"/>
+  <property name="project.config" value="release"/>
+
+  <!-- Folder references -->
+  <property name="dir.solution" value="."/>
+  <property name="dir.build" value="build" dynamic="true"/>
+  <property name="dir.test" value="${dir.build}\${nant.settings.currentframework}-${project.config}"/>
+  <property name="dir.package" value="${dir.build}/package"/>
+  <property name="dir.results" value="${dir.build}/results"/>
+
+  <!-- Compilation settings -->
+  <property name="file.solution" value="${dir.solution}/${project::get-name()}.sln"/>
+
+
+  <target name="clean" description="cleans build directory">
+    <delete dir="${dir.build}" verbose="true" if="${directory::exists(dir.build)}" />
+  </target>
+
+  <target name="debug" depends="clean">
+    <property name="debug" value="true" />
+  </target>
+
+  <target name="release" depends="clean">
+    <property name="debug" value="false" />
+  </target>
+
+  <target name="build">
+    <echo message="Build Directory is ${dir.build}" />
+    <exec program="${framework::get-tool-path('msbuild.exe')}"
+      commandline="${file.solution} /t:Clean /p:Configuration=${project.config} /v:q" workingdir="." />
+    <exec program="${framework::get-tool-path('msbuild.exe')}"
+      commandline="${file.solution} /t:Rebuild /p:Configuration=${project.config} /v:q" workingdir="." />
+  </target>
+
+  <target name="run" depends="build">
+    <exec program="${basename}.exe" basedir="${dir.build}" />
+  </target>
+</project>
