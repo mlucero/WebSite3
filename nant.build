@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project name="WebSite3" default="release">
-  <!-- Version settings -->
   <property name="svn.executable" value="lib/subversion/svn.exe" dynamic="true" if="${not property::exists('svn.executable')}" />
   <property name="revisionnumber" value="9999" dynamic="true"/>
   <property name="project.fullversion" value="1.0.${revisionnumber}.0" dynamic="true"/>
@@ -8,7 +7,8 @@
 
   <!-- Folder references -->
   <property name="dir.solution" value="."/>
-  <property name="dir.build" value="build" dynamic="true"/>
+  <!-- Do not forget the slash '/' at the end of dir! Pls thank Microsoft for this-->
+  <property name="dir.build" value="./../published/" dynamic="true"/>
   <property name="dir.test" value="${dir.build}\${nant.settings.currentframework}-${project.config}"/>
   <property name="dir.package" value="${dir.build}/package"/>
   <property name="dir.results" value="${dir.build}/results"/>
@@ -21,24 +21,33 @@
     <delete dir="${dir.build}" verbose="true" if="${directory::exists(dir.build)}" />
   </target>
 
+  <!-- build the release or debug version? -->
   <target name="debug" depends="build">
-    <property name="debug" value="true" />
+    <property name="project.config" value="debug"/>
   </target>
 
   <target name="release" depends="build">
-    <property name="debug" value="false" />
+    <property name="project.config" value="release"/>
   </target>
 
   <target name="build">
+    <!-- build web portal -->
     <echo message="Build Directory is ${dir.build}" />
     <echo message="msbuild.exe=${framework::get-tool-path('msbuild.exe')}" />
-    <exec program="${framework::get-tool-path('msbuild.exe')}"
-      commandline="${file.solution} /t:Clean /p:OutDir=../published /p:Configuration=${project.config} /v:q" workingdir="." />
-    <exec program="${framework::get-tool-path('msbuild.exe')}"
-      commandline="${file.solution} /t:Rebuild /p:OutDir=./../published/ /p:Configuration=${project.config} /v:q" workingdir="." />
+    <exec program="${framework::get-tool-path('msbuild.exe')}" workingdir=".">
+      <arg value='/t:Clean' />
+      <arg value='/p:Configuration=${project.config}' />
+      <arg value='/v:q' />
+      <arg line='/p:OutDir=${dir.build}' />
+    </exec>
+    <!-- see http://www.netomatix.com/development/wapwithnant.aspx -->
+    <exec program="${framework::get-tool-path('msbuild.exe')}" workingdir=".">
+      <arg value='/t:Rebuild' />
+      <arg line='"${file.solution}"' />
+      <arg value='/v:q' />
+      <arg value='/p:Configuration=${project.config}' />
+      <arg line='/p:OutDir=${dir.build}' />
+    </exec>
   </target>
 
-  <target name="run" depends="build">
-    <exec program="${basename}.exe" basedir="${dir.build}" />
-  </target>
 </project>
