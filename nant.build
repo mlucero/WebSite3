@@ -21,20 +21,21 @@
     <delete dir="${dir.build}" verbose="true" if="${directory::exists(dir.build)}" />
   </target>
 
-  <target name="debug" depends="clean">
+  <target name="debug" depends="build">
     <property name="debug" value="true" />
   </target>
 
-  <target name="release" depends="clean">
+  <target name="release" depends="build">
     <property name="debug" value="false" />
   </target>
 
   <target name="build">
     <echo message="Build Directory is ${dir.build}" />
+    <echo message="msbuild.exe=${framework::get-tool-path('msbuild.exe')}" />
     <exec program="${framework::get-tool-path('msbuild.exe')}"
-      commandline="${file.solution} /t:Clean /p:Configuration=${project.config} /v:q" workingdir="." />
+      commandline="${file.solution} /t:Clean /p:OutDir=../published /p:Configuration=${project.config} /v:q" workingdir="." />
     <exec program="${framework::get-tool-path('msbuild.exe')}"
-      commandline="${file.solution} /t:Rebuild /p:Configuration=${project.config} /v:q" workingdir="." />
+      commandline="${file.solution} /t:Rebuild /p:OutDir=./../published/ /p:Configuration=${project.config} /v:q" workingdir="." />
   </target>
 
   <target name="run" depends="build">
