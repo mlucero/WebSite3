@@ -8,17 +8,20 @@
   <!-- Folder references -->
   <property name="dir.solution" value="."/>
   <!-- Do not forget the slash '/' at the end of dir! Pls thank Microsoft for this-->
-  <property name="dir.build" value="./../published/" dynamic="true"/>
+  <property name="dir.build" value="../published/"/>
   <property name="dir.test" value="${dir.build}\${nant.settings.currentframework}-${project.config}"/>
   <property name="dir.package" value="${dir.build}/package"/>
   <property name="dir.results" value="${dir.build}/results"/>
 
   <!-- Compilation settings -->
   <property name="file.solution" value="${dir.solution}/${project::get-name()}.sln"/>
+  <!--change relative path to full path-->
+  <property name="dir.build.abs" value="${path::get-full-path(dir.build)}"/>
+  <echo message="dir.build.abs=${dir.build.abs}" />
 
 
   <target name="clean" description="cleans build directory">
-    <delete dir="${dir.build}" verbose="true" if="${directory::exists(dir.build)}" />
+    <delete dir="${dir.build.abs}" verbose="true" if="${directory::exists(dir.build.abs)}" />
   </target>
 
   <!-- build the release or debug version? -->
@@ -32,21 +35,23 @@
 
   <target name="build">
     <!-- build web portal -->
-    <echo message="Build Directory is ${dir.build}" />
+    <echo message="Build Directory is ${dir.build.abs}" />
     <echo message="msbuild.exe=${framework::get-tool-path('msbuild.exe')}" />
-    <exec program="${framework::get-tool-path('msbuild.exe')}" workingdir=".">
+    <!--working in the directory of solution file-->
+    <exec program="${framework::get-tool-path('msbuild.exe')}" workingdir="${dir.solution}">
       <arg value='/t:Clean' />
       <arg value='/p:Configuration=${project.config}' />
       <arg value='/v:q' />
-      <arg line='/p:OutDir=${dir.build}' />
+      <arg line='/p:OutDir=${dir.build.abs}' />
+      <arg file='${file.solution}' />
     </exec>
     <!-- see http://www.netomatix.com/development/wapwithnant.aspx -->
-    <exec program="${framework::get-tool-path('msbuild.exe')}" workingdir=".">
+    <exec program="${framework::get-tool-path('msbuild.exe')}" workingdir="${dir.solution}">
       <arg value='/t:Rebuild' />
-      <arg line='"${file.solution}"' />
       <arg value='/v:q' />
       <arg value='/p:Configuration=${project.config}' />
-      <arg line='/p:OutDir=${dir.build}' />
+      <arg line='/p:OutDir=${dir.build.abs}' />
+      <arg file='${file.solution}' />
     </exec>
   </target>
 
